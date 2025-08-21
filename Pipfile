@@ -29,7 +29,6 @@ langchain_ollama = "*"
 langchain-huggingface = "*"
 transformers = "*"
 sentence-transformers = "*"
-torch = "*"
 
 [dev-packages]
 ipykernel = "*"

@@ -37,7 +37,12 @@ def ingest_and_create_vectorstore():
 
 
 def build_qa_chain(vectorstore):
-    pipe = pipeline("text-generation", model="distilbert/distilgpt2")
+    # pipe = pipeline("text-generation", model="distilbert/distilgpt2")
+    pipe = pipeline(
+        "text-generation",
+        model="distilbert/distilgpt2",
+        device=-1  # Ensures CPU is used
+    )
     llm = HuggingFacePipeline(pipeline=pipe)
 
     prompt_template = """
