@@ -26,6 +26,10 @@ langchain-chroma = "*"
 python-dotenv = "*"
 langchain-tavily = "*"
 langchain_ollama = "*"
+langchain-huggingface = "*"
+transformers = "*"
+sentence-transformers = "*"
+torch = "*"
 
 [dev-packages]
 ipykernel = "*"
