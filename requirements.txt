@@ -1,0 +1,29 @@
+beautifulsoup4
+black
+tiktoken
+openai
+unstructured
+nltk
+fastapi
+jinja2
+uvicorn
+tqdm
+isort
+langchainhub
+firecrawl-py
+langchain-community
+langsmith
+pillow
+langchain-pinecone
+certifi
+langchain-chroma
+python-dotenv
+langchain-tavily
+langchain_ollama
+langchain-huggingface
+transformers
+sentence-transformers
+ipykernel
+
+# CPU-only PyTorch (must include index URL)
+torch==2.2.0+cpu --index-url https://download.pytorch.org/whl/cpu
