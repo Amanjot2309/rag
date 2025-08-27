@@ -1,28 +1,16 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+import streamlit as st
 from langchain_community.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.vectorstores import InMemoryVectorStore
-from langchain_ollama import OllamaEmbeddings, OllamaLLM
+from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
+from transformers import pipeline
 from langchain_core.prompts import PromptTemplate
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
 
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_huggingface import HuggingFacePipeline
-from transformers import pipeline
-
-app = FastAPI()
-
-class QueryRequest(BaseModel):
-    question: str
-
-# Global variables to hold vectorstore and QA chain
-vectorstore = None
-qa_chain = None
-
+@st.cache_resource(show_spinner=True)
 def ingest_and_create_vectorstore():
-    print("Loading pizza recipe from text file...")
+    st.write("Loading pizza recipe from text file...")
     loader = TextLoader("pizza_recipe.txt")
     raw_documents = loader.load()
 
@@ -32,16 +20,15 @@ def ingest_and_create_vectorstore():
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
     vectorstore = InMemoryVectorStore.from_documents(documents, embedding=embeddings)
 
-    print(f"Ingested {len(documents)} chunks into vectorstore.")
+    st.write(f"Ingested {len(documents)} chunks into vectorstore.")
     return vectorstore
 
-
-def build_qa_chain(vectorstore):
-    # pipe = pipeline("text-generation", model="distilbert/distilgpt2")
+@st.cache_resource(show_spinner=True)
+def _build_qa_chain(_vectorstore):
     pipe = pipeline(
         "text-generation",
         model="distilbert/distilgpt2",
-        device=-1  # Ensures CPU is used
+        device=-1  # Use CPU
     )
     llm = HuggingFacePipeline(pipeline=pipe)
 
@@ -58,27 +45,26 @@ def build_qa_chain(vectorstore):
     {input}
     """
     prompt = PromptTemplate.from_template(prompt_template)
-
     combine_docs_chain = create_stuff_documents_chain(llm, prompt)
 
     return create_retrieval_chain(
-        retriever=vectorstore.as_retriever(),
+        retriever=_vectorstore.as_retriever(),
         combine_docs_chain=combine_docs_chain
     )
 
-@app.on_event("startup")
-def startup_event():
-    global vectorstore, qa_chain
-    vectorstore = ingest_and_create_vectorstore()
-    qa_chain = build_qa_chain(vectorstore)
+def main():
+    st.title("🍕 Pizza Recipe Q&A")
 
-@app.post("/query")
-def query_qa(request: QueryRequest):
-    global qa_chain
-    result = qa_chain.invoke({"input": request.question})
-    return {"answer": result["answer"]}
- 
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run("app2:app", host="0.0.0.0", port=8000, reload=True)
-    
+    vectorstore = ingest_and_create_vectorstore()
+    qa_chain = _build_qa_chain(vectorstore)
+
+    question = st.text_input("How to make pizza?")
+
+    if question:
+        with st.spinner("Generating answer..."):
+            result = qa_chain.invoke({"input": question})
+        st.markdown("### Answer:")
+        st.write(result["answer"])
+
+if __name__ == "__main__":
+    main()
