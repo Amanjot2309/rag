@@ -77,8 +77,4 @@ def query_qa(request: QueryRequest):
     global qa_chain
     result = qa_chain.invoke({"input": request.question})
     return {"answer": result["answer"]}
- 
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run("app2:app", host="0.0.0.0", port=8000, reload=True)
-    
+  

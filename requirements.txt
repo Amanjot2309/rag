@@ -24,6 +24,7 @@ langchain-huggingface
 transformers
 sentence-transformers
 ipykernel
+langchain[groq]
 
 # CPU-only PyTorch (must include index URL)
 # torch==2.2.0+cpu --index-url https://download.pytorch.org/whl/cpu
